@@ -44,10 +44,18 @@ function streamFile(path: string, start?: number, end?: number) {
   return Readable.toWeb(createReadStream(path, { start, end })) as unknown as BodyInit;
 }
 
+function enforceMediaRequest(request: Request) {
+  if (request.headers.get("sec-fetch-dest") !== "audio") {
+    notFound();
+  }
+}
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  enforceMediaRequest(request);
+
   const { id } = await params;
   const audioGenerationId = Number(id);
 
@@ -77,7 +85,9 @@ export async function GET(
     "Cache-Control": "private, no-store",
     "Content-Disposition": "inline",
     "Content-Type": "audio/mpeg",
+    "Referrer-Policy": "same-origin",
     "X-Content-Type-Options": "nosniff",
+    "X-Robots-Tag": "noindex, nofollow, noarchive",
   });
   const range = getRange(request.headers.get("range"), audioStat.size);
 
