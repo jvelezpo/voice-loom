@@ -8,7 +8,20 @@ datasource db {
 }
 
 model TextEntry {
-  id        Int      @id @default(autoincrement())
-  content   String
-  createdAt DateTime @default(now())
+  id               Int               @id @default(autoincrement())
+  content          String
+  createdAt        DateTime          @default(now())
+  audioGenerations AudioGeneration[]
+}
+
+model AudioGeneration {
+  id          Int       @id @default(autoincrement())
+  textEntryId Int
+  voiceKey    String
+  referenceId String
+  filePath    String
+  createdAt   DateTime  @default(now())
+  textEntry   TextEntry @relation(fields: [textEntryId], references: [id], onDelete: Cascade)
+
+  @@unique([textEntryId, voiceKey])
 }

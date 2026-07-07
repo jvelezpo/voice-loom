@@ -2,19 +2,26 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { VOICES } from "@/util/constant";
+import { AudioGenerations } from "./audio-generations";
 
 const dateFormatter = new Intl.DateTimeFormat("en", {
   dateStyle: "medium",
   timeStyle: "short",
 });
 
-const voiceOptions = (Object.keys(VOICES) as Array<keyof typeof VOICES>).map((key) => ({
-  key,
-  label: key
+function getVoiceLabel(voiceKey: string) {
+  return voiceKey
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" "),
-}));
+    .join(" ");
+}
+
+const voiceOptions = (Object.keys(VOICES) as Array<keyof typeof VOICES>).map(
+  (key) => ({
+    key,
+    label: getVoiceLabel(key),
+  }),
+);
 
 export default async function TextEntryPage({
   params,
@@ -31,6 +38,13 @@ export default async function TextEntryPage({
   const entry = await prisma.textEntry.findUnique({
     where: {
       id: entryId,
+    },
+    include: {
+      audioGenerations: {
+        orderBy: {
+          createdAt: "desc",
+        },
+      },
     },
   });
 
@@ -68,34 +82,17 @@ export default async function TextEntryPage({
             {entry.content}
           </p>
 
-          <div className="mt-8 flex flex-col gap-3 border-t border-zinc-200 pt-5 sm:flex-row sm:items-end sm:justify-end">
-            <div className="flex flex-col gap-2 sm:min-w-64">
-              <label
-                htmlFor="voice"
-                className="text-sm font-medium text-zinc-800"
-              >
-                Voice
-              </label>
-              <select
-                id="voice"
-                name="voice"
-                className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none transition focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100"
-              >
-                {voiceOptions.map((voice) => (
-                  <option key={voice.key} value={VOICES[voice.key]}>
-                    {voice.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              type="button"
-              className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-100"
-            >
-              Generate audio
-            </button>
-          </div>
+          <AudioGenerations
+            textEntryId={entry.id}
+            voiceOptions={voiceOptions}
+            audioGenerations={entry.audioGenerations.map((audioGeneration) => ({
+              id: audioGeneration.id,
+              voiceKey: audioGeneration.voiceKey,
+              voiceLabel: getVoiceLabel(audioGeneration.voiceKey),
+              createdAt: audioGeneration.createdAt.toISOString(),
+              createdAtLabel: dateFormatter.format(audioGeneration.createdAt),
+            }))}
+          />
         </article>
       </div>
     </main>
