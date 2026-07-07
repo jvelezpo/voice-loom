@@ -12,6 +12,7 @@ model TextEntry {
   content          String
   createdAt        DateTime          @default(now())
   audioGenerations AudioGeneration[]
+  audioAnalysis    AudioTextAnalysis?
 }
 
 model AudioGeneration {
@@ -24,4 +25,16 @@ model AudioGeneration {
   textEntry   TextEntry @relation(fields: [textEntryId], references: [id], onDelete: Cascade)
 
   @@unique([textEntryId, voiceKey])
+}
+
+model AudioTextAnalysis {
+  id             Int       @id @default(autoincrement())
+  textEntryId    Int       @unique
+  languageCode   String
+  languageName   String
+  charactersJson String
+  fishAudioText  String    @default("")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  textEntry      TextEntry @relation(fields: [textEntryId], references: [id], onDelete: Cascade)
 }
