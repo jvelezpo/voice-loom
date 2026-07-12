@@ -2,6 +2,7 @@ import { connection } from "next/server";
 import Link from "next/link";
 import { createTextEntry } from "./actions";
 import { SubmitButton } from "./submit-button";
+import { SpeechTextarea } from "./speech-textarea";
 import { prisma } from "@/lib/prisma";
 
 const dateFormatter = new Intl.DateTimeFormat("en", {
@@ -46,22 +47,7 @@ export default async function Home() {
 
         <section className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm sm:p-6">
           <form action={createTextEntry} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="content"
-                className="text-sm font-medium text-zinc-800"
-              >
-                Text
-              </label>
-              <textarea
-                id="content"
-                name="content"
-                required
-                rows={8}
-                placeholder="Paste text here..."
-                className="min-h-48 resize-y rounded-lg border border-zinc-300 bg-white px-4 py-3 text-base leading-7 text-zinc-950 outline-none transition placeholder:text-zinc-400 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100"
-              />
-            </div>
+            <SpeechTextarea />
             <div className="flex justify-end">
               <SubmitButton />
             </div>
