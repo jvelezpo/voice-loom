@@ -23,7 +23,7 @@ export default async function Home() {
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
         <header className="flex flex-col gap-3 border-b border-zinc-200 pb-6">
           <p className="text-sm font-medium uppercase tracking-wide text-emerald-700">
-            Audio Generator
+            Voice Loom
           </p>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="max-w-2xl">

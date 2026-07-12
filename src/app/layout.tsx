@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Audio Generator",
-  description: "Save text entries for audio generation.",
+  title: "Voice Loom",
+  description: "Turn saved text into expressive generated audio.",
 };
 
 export default function RootLayout({
