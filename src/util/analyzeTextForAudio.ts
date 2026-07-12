@@ -3,6 +3,11 @@ import { askAi, LlmRequestError } from "@/util/aiConfig";
 export type AudioCharacterAnalysis = {
   name: string;
   description: string;
+  gender: "female" | "male" | "unknown";
+  age: "child" | "young_adult" | "adult" | "senior" | "unknown";
+  tone: string;
+  energy: "low" | "medium" | "high" | "unknown";
+  role: "narrator" | "character";
 };
 
 export type AudioTextTurnAnalysis = {
@@ -24,7 +29,12 @@ const MAX_ANALYSIS_OUTPUT_TOKENS = 12000;
 const systemPrompt = [
   "You prepare source text metadata for future text-to-speech audio generation.",
   "Identify the text language and the distinct speaking characters explicitly present in the text.",
-  "When a character's gender is apparent from the source text or widely known character identity, include male or female in that character description. Use unknown when it is not apparent.",
+  "For each character, infer voice traits only when supported by the text: gender, approximate age, tone, energy, and role.",
+  'Allowed gender values are "female", "male", and "unknown".',
+  'Allowed age values are "child", "young_adult", "adult", "senior", and "unknown".',
+  'Allowed energy values are "low", "medium", "high", and "unknown".',
+  'Allowed role values are "narrator" and "character".',
+  "Use a short comma-separated tone description such as warm, serious, playful, authoritative, or neutral.",
   'Include a generic character named "Narrator" for all source text that is not spoken by or directly attributed to a named character.',
   'Narrator is a role, not a male or female character. Always describe Narrator as narrator and never assign it a gender.',
   "Return the source text as an ordered turn-by-turn script.",
@@ -41,7 +51,7 @@ const systemPrompt = [
   'Escape all newlines in JSON strings as "\\n". Escape double quotes inside strings. Do not use raw multiline JSON strings.',
   "Do not wrap the JSON in markdown fences.",
   "Return only valid JSON with this exact shape:",
-  '{"language":{"code":"ISO 639-1 code or und","name":"language name"},"characters":[{"name":"character name","description":"short role or voice-relevant description including apparent gender"}],"turns":[{"order":1,"characterName":"character name or Narrator","text":"exact original contiguous source text for this turn"}]}',
+  '{"language":{"code":"ISO 639-1 code or und","name":"language name"},"characters":[{"name":"character name","description":"short voice-relevant description","gender":"female|male|unknown","age":"child|young_adult|adult|senior|unknown","tone":"short comma-separated voice qualities","energy":"low|medium|high|unknown","role":"narrator|character"}],"turns":[{"order":1,"characterName":"character name or Narrator","text":"exact original contiguous source text for this turn"}]}',
 ].join("\n");
 
 class InvalidAiJsonError extends Error {
@@ -61,6 +71,16 @@ function stringValue(value: unknown) {
 
 function sourceTextValue(value: unknown) {
   return typeof value === "string" ? value : "";
+}
+
+function enumValue<T extends string>(
+  value: unknown,
+  allowed: readonly T[],
+  fallback: T,
+) {
+  return typeof value === "string" && allowed.includes(value as T)
+    ? (value as T)
+    : fallback;
 }
 
 function parseJsonObject(response: string) {
@@ -113,6 +133,27 @@ function normalizeCharacters(value: unknown): AudioCharacterAnalysis[] {
       return {
         name,
         description: stringValue(character.description),
+        gender: enumValue(
+          character.gender,
+          ["female", "male", "unknown"] as const,
+          "unknown",
+        ),
+        age: enumValue(
+          character.age,
+          ["child", "young_adult", "adult", "senior", "unknown"] as const,
+          "unknown",
+        ),
+        tone: stringValue(character.tone) || "neutral",
+        energy: enumValue(
+          character.energy,
+          ["low", "medium", "high", "unknown"] as const,
+          "unknown",
+        ),
+        role: enumValue(
+          character.role,
+          ["narrator", "character"] as const,
+          name.toLowerCase() === "narrator" ? "narrator" : "character",
+        ),
       };
     })
     .filter((character): character is AudioCharacterAnalysis =>

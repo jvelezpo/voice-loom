@@ -55,6 +55,7 @@ type AutoGenerateState = {
 
 type AudioGenerationsProps = {
   textEntryId: number
+  sourceText: string
   voiceOptions: VoiceOption[]
   aiAudioGenerations: AiAudioGenerationItem[]
   audioGenerations: AudioGenerationItem[]
@@ -77,6 +78,7 @@ function audioGenerationDomId(id: number) {
 
 export function AudioGenerations({
   textEntryId,
+  sourceText,
   voiceOptions,
   aiAudioGenerations,
   audioGenerations,
@@ -89,6 +91,9 @@ export function AudioGenerations({
   )
   const [autoState, setAutoState] = useState(initialAutoGenerateState)
   const [isAutoPending, setIsAutoPending] = useState(false)
+  const [isTextExpanded, setIsTextExpanded] = useState(false)
+  const [isAudioPlanExpanded, setIsAudioPlanExpanded] = useState(false)
+  const isLongText = sourceText.length > 600
 
   useEffect(() => {
     const audioGenerationId =
@@ -157,55 +162,63 @@ export function AudioGenerations({
 
   return (
     <>
-      <form
-        action={formAction}
-        className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-start border-t border-zinc-200 pt-6 mt-4"
-      >
-        <input type="hidden" name="textEntryId" value={textEntryId} />
-        <div className="flex flex-row gap-2 sm:min-w-64 items-center">
-          <label
-            htmlFor="voiceKey"
-            className="text-sm font-medium text-zinc-800"
-          >
-            Voice
-          </label>
-          <select
-            id="voiceKey"
-            name="voiceKey"
-            className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none transition focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100"
-          >
-            {voiceOptions.map((voice) => (
-              <option key={voice.key} value={voice.key}>
-                {voice.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <button
-          type="submit"
-          disabled={isPending}
-          className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:bg-zinc-400"
-        >
-          {isPending ? 'Generating...' : 'Generate audio'}
-        </button>
-      </form>
-
-      <section className="mt-8 border-t border-zinc-200 pt-5">
-        <div className="flex flex-col gap-4">
+      <section className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 sm:p-5">
+        <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-lg font-semibold text-zinc-950">
-              AI audio plan
-            </h2>
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
+                Audio studio
+              </p>
+              <h2 className="mt-1 text-xl font-semibold text-zinc-950">
+                Generate audio
+              </h2>
+              <p className="mt-1 text-sm text-zinc-600">
+                Automatically cast the characters or choose one voice.
+              </p>
+            </div>
             <button
               type="button"
               disabled={isAutoPending}
               onClick={handleAutoGenerateAudio}
-              className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:bg-zinc-400"
+              className="rounded-lg bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-800 focus:outline-none focus:ring-4 focus:ring-emerald-200 disabled:cursor-not-allowed disabled:bg-zinc-400"
             >
               {isAutoPending ? 'Generating...' : 'Auto Generate Audio'}
             </button>
           </div>
+
+          <form
+            action={formAction}
+            className="flex flex-col gap-3 border-t border-emerald-200 pt-4 sm:flex-row sm:items-end"
+          >
+            <input type="hidden" name="textEntryId" value={textEntryId} />
+            <div className="flex flex-1 flex-col gap-1.5">
+              <label
+                htmlFor="voiceKey"
+                className="text-sm font-medium text-zinc-800"
+              >
+                Single voice
+              </label>
+              <select
+                id="voiceKey"
+                name="voiceKey"
+                className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 outline-none transition focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100"
+              >
+                {voiceOptions.map((voice) => (
+                  <option key={voice.key} value={voice.key}>
+                    {voice.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isPending}
+              className="rounded-lg border border-emerald-700 bg-white px-4 py-2 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 focus:outline-none focus:ring-4 focus:ring-emerald-200 disabled:cursor-not-allowed disabled:border-zinc-300 disabled:text-zinc-400"
+            >
+              {isPending ? 'Generating...' : 'Generate with this voice'}
+            </button>
+          </form>
 
           {autoState.message ? (
             <p
@@ -213,15 +226,94 @@ export function AudioGenerations({
                 'rounded-lg border px-3 py-2 text-sm',
                 autoState.status === 'error'
                   ? 'border-red-200 bg-red-50 text-red-700'
-                  : 'border-emerald-200 bg-emerald-50 text-emerald-800',
+                  : 'border-emerald-300 bg-white text-emerald-800',
               ].join(' ')}
               role="status"
             >
               {autoState.message}
             </p>
           ) : null}
+          {state.message ? (
+            <p
+              className={[
+                'rounded-lg border px-3 py-2 text-sm',
+                state.status === 'error'
+                  ? 'border-red-200 bg-red-50 text-red-700'
+                  : 'border-emerald-300 bg-white text-emerald-800',
+              ].join(' ')}
+              role="status"
+            >
+              {state.message}
+            </p>
+          ) : null}
+        </div>
+      </section>
 
-          {audioAnalysis ? (
+      <section className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-base font-semibold text-zinc-950">Source text</h2>
+          {isLongText ? (
+            <button
+              type="button"
+              onClick={() => setIsTextExpanded((expanded) => !expanded)}
+              className="shrink-0 text-sm font-semibold text-emerald-700 hover:text-emerald-800 focus:outline-none focus:underline"
+              aria-expanded={isTextExpanded}
+            >
+              {isTextExpanded ? 'Show less' : 'View full text'}
+            </button>
+          ) : null}
+        </div>
+        <p
+          className={[
+            'mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-700',
+            isLongText && !isTextExpanded ? 'line-clamp-5' : '',
+          ].join(' ')}
+        >
+          {sourceText}
+        </p>
+      </section>
+
+      <section className="mt-6 border-t border-zinc-200 pt-5">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-zinc-950">
+                AI audio plan
+              </h2>
+              {audioAnalysis ? (
+                <p className="mt-1 text-sm text-zinc-500">
+                  {audioAnalysis.languageName} · {audioAnalysis.characters.length}{' '}
+                  characters · {audioAnalysis.turns.length} turns
+                </p>
+              ) : (
+                <p className="mt-1 text-sm text-zinc-500">
+                  Generate automatic audio to create a character and dialogue plan.
+                </p>
+              )}
+            </div>
+            {audioAnalysis ? (
+              <button
+                type="button"
+                onClick={() =>
+                  setIsAudioPlanExpanded((expanded) => !expanded)
+                }
+                className="self-start text-sm font-semibold text-emerald-700 hover:text-emerald-800 focus:outline-none focus:underline sm:self-auto"
+                aria-expanded={isAudioPlanExpanded}
+              >
+                {isAudioPlanExpanded ? 'Show less' : 'View full audio plan'}
+              </button>
+            ) : null}
+          </div>
+
+          {audioAnalysis && !isAudioPlanExpanded ? (
+            <p className="line-clamp-2 rounded-lg bg-zinc-50 px-3 py-2 text-sm text-zinc-600">
+              {audioAnalysis.characters
+                .map((character) => character.name)
+                .join(', ')}
+            </p>
+          ) : null}
+
+          {audioAnalysis && isAudioPlanExpanded ? (
             <div className="flex flex-col gap-4 border-l-4 border-emerald-600 pl-4">
               <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
                 <p className="text-sm text-zinc-700">
@@ -369,20 +461,6 @@ export function AudioGenerations({
               {audioGenerations.length} saved
             </span>
           </div>
-
-          {state.message ? (
-            <p
-              className={[
-                'rounded-lg border px-3 py-2 text-sm',
-                state.status === 'error'
-                  ? 'border-red-200 bg-red-50 text-red-700'
-                  : 'border-emerald-200 bg-emerald-50 text-emerald-800',
-              ].join(' ')}
-              role="status"
-            >
-              {state.message}
-            </p>
-          ) : null}
 
           {audioGenerations.length === 0 ? (
             <div className="rounded-lg border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-zinc-500">

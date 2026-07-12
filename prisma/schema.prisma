@@ -8,9 +8,9 @@ datasource db {
 }
 
 model TextEntry {
-  id               Int               @id @default(autoincrement())
+  id               Int                @id @default(autoincrement())
   content          String
-  createdAt        DateTime          @default(now())
+  createdAt        DateTime           @default(now())
   audioGenerations AudioGeneration[]
   audioAnalysis    AudioTextAnalysis?
 }
@@ -37,4 +37,21 @@ model AudioTextAnalysis {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   textEntry      TextEntry @relation(fields: [textEntryId], references: [id], onDelete: Cascade)
+}
+
+model FishVoiceModel {
+  referenceId   String   @id
+  title         String
+  description   String   @default("")
+  tagsJson      String   @default("[]")
+  languagesJson String   @default("[]")
+  state         String
+  visibility    String
+  taskCount     Int      @default(0)
+  cachedAt      DateTime @default(now())
+}
+
+model FishVoiceSync {
+  languageCode String   @id
+  refreshedAt  DateTime
 }

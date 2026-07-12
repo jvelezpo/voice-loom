@@ -224,12 +224,9 @@ export default async function TextEntryPage({
             </time>
           </header>
 
-          <p className="whitespace-pre-wrap text-base leading-7 text-zinc-800">
-            {entry.content}
-          </p>
-
           <AudioGenerations
             textEntryId={entry.id}
+            sourceText={entry.content}
             voiceOptions={voiceOptions}
             aiAudioGenerations={aiAudioGenerations}
             audioGenerations={manualAudioGenerations}
