@@ -26,6 +26,7 @@ const systemPrompt = [
   "Identify the text language and the distinct speaking characters explicitly present in the text.",
   "When a character's gender is apparent from the source text or widely known character identity, include male or female in that character description. Use unknown when it is not apparent.",
   'Include a generic character named "Narrator" for all source text that is not spoken by or directly attributed to a named character.',
+  'Narrator is a role, not a male or female character. Always describe Narrator as narrator and never assign it a gender.',
   "Return the source text as an ordered turn-by-turn script.",
   "A turn is one contiguous span of source text spoken by one character or narrated by Narrator.",
   'Use "Narrator" for every unattributed narrative span, including narration that appears between dialogue turns.',

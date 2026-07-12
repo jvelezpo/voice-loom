@@ -1,5 +1,5 @@
 export const VOICES = {
-  es_latam_male_narrator: '0708eb0681664a7683c475e84c368634',
+  narrator: '0708eb0681664a7683c475e84c368634',
   es_latam_male_goku: '53cfcc2725314f88902e45a991a8c11a',
   es_latam_male_vegeta: '86bc0bf60af340a887cfb9629bd7047a',
   es_latam_male_trunks_kid: '255406d25ff840fd932ca5524448b006',

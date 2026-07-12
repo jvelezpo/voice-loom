@@ -161,6 +161,13 @@ function getVoiceAlias(voiceKey: VoiceKey) {
   return voiceKey.split("_").slice(3).join(" ");
 }
 
+function isNarratorVoice(voiceKey: VoiceKey) {
+  return (
+    normalizeName(voiceKey) === "narrator" ||
+    normalizeName(getVoiceAlias(voiceKey)) === "narrator"
+  );
+}
+
 function getVoiceGender(voiceKey: VoiceKey): VoiceGender {
   if (voiceKey.includes("_female_")) {
     return "female";
@@ -275,12 +282,10 @@ function assignCharacterVoices(
   }
 
   const narratorVoiceKey =
-    voiceKeys.find(
-      (voiceKey) => normalizeName(getVoiceAlias(voiceKey)) === "narrator",
-    ) ??
+    voiceKeys.find(isNarratorVoice) ??
     voiceKeys[0];
   const characterVoiceKeys = voiceKeys.filter(
-    (voiceKey) => voiceKey !== narratorVoiceKey,
+    (voiceKey) => !isNarratorVoice(voiceKey),
   );
   const femaleVoiceKeys = characterVoiceKeys.filter(
     (voiceKey) => getVoiceGender(voiceKey) === "female",
@@ -335,9 +340,12 @@ function assignCharacterVoices(
       const fallbackVoiceKeys =
         genderVoiceKeys.length > 0
           ? genderVoiceKeys
-          : characterVoiceKeys.length > 0
-            ? characterVoiceKeys
-            : voiceKeys;
+          : characterVoiceKeys;
+
+      if (fallbackVoiceKeys.length === 0) {
+        throw new Error("No non-narrator character voices are available.");
+      }
+
       const availableVoiceKeys = getAvailableVoiceKeys(
         fallbackVoiceKeys,
         usedVoiceKeys,
